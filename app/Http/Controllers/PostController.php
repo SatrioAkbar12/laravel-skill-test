@@ -41,7 +41,11 @@ class PostController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $post = Post::with('user')
+            ->active()
+            ->findOrFail($id);
+
+        return new PostResource($post);
     }
 
     /**
