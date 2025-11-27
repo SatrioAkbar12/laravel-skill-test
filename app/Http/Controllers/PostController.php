@@ -43,7 +43,9 @@ class PostController extends Controller
             'published_at' => $request->published_at,
         ]);
 
-        return new PostResource($post);
+        return new PostResource($post)
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -73,7 +75,9 @@ class PostController extends Controller
     {
         $post->update($request->validated());
 
-        return new PostResource($post);
+        return new PostResource($post)
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -87,7 +91,7 @@ class PostController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Post deleted successfully.',
-            ]);
+            ], 200);
         }
 
         abort(403);
