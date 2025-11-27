@@ -27,7 +27,7 @@ class UpdatePostRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'is_draft' => 'boolean',
+            'is_draft' => 'required|boolean',
             'published_at' => 'nullable|date',
         ];
     }
