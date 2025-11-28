@@ -88,11 +88,14 @@ class PostTest extends TestCase
     public function test_update_only_author_can()
     {
         $dummyUser = User::factory()->create();
+        $published_time = now()->format('Y-m-d\TH:i:s.000000\Z');
 
         $response = $this->actingAs($dummyUser)
             ->putJson(route('posts.update', ['post' => $this->post->id]), [
-                'title' => 'Post Title',
-                'content' => 'Content of this post',
+                'title' => 'Post Title Updated',
+                'content' => 'Content is updated',
+                'is_draft' => false,
+                'published_at' => $published_time,
             ]);
 
         $response->assertStatus(403);
@@ -110,7 +113,7 @@ class PostTest extends TestCase
                 'published_at' => $published_time,
             ]);
 
-        $response->assertStatus(201)
+        $response->assertStatus(200)
             ->assertJsonFragment([
                 'title' => 'Post Title Updated',
                 'content' => 'Content is updated',
