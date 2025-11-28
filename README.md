@@ -40,4 +40,7 @@ php artisan test
 
 #run PostTest
 php artisan test --filter=PostTest
+
+#run SchedulingPostTest
+php artisan test --filter=SchedulingPostTest
 ```
