@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Post;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 
 class UpdatePostRequest extends FormRequest
 {
@@ -12,9 +11,7 @@ class UpdatePostRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $post = $this->route('post');
-
-        return $post && $post->user_id === Auth::id();
+        return true;
     }
 
     /**
