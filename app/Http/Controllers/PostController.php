@@ -7,6 +7,7 @@ use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
@@ -73,11 +74,13 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, Post $post)
     {
+        Gate::authorize('update', $post);
+
         $post->update($request->validated());
 
         return new PostResource($post)
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode(200);
     }
 
     /**
@@ -85,15 +88,13 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        if ($post->user_id === Auth::id()) {
-            $post->delete();
+        Gate::authorize('delete', $post);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Post deleted successfully.',
-            ], 200);
-        }
+        $post->delete();
 
-        abort(403);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Post deleted successfully.',
+        ], 200);
     }
 }
