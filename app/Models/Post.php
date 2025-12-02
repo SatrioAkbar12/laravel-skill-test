@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use Dom\Comment;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model
 {
@@ -31,15 +35,16 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function scopeActive($query)
+    public function comment(): HasMany
     {
-        return $query->where('is_draft', false)
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now());
+        return $this->hasMany(Comment::class);
     }
 
-    public function scopeOwnedBy($query, $userId)
+    #[Scope]
+    protected function active(Builder $query): void
     {
-        return $query->where('user_id', $userId);
+        $query->where('is_draft', false)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 }
