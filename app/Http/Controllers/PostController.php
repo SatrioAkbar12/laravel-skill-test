@@ -6,10 +6,10 @@ use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 class PostController extends Controller
 {
@@ -46,7 +46,7 @@ class PostController extends Controller
             return new PostResource($post)
                 ->response()
                 ->setStatusCode(201);
-        } catch (Throwable $error) {
+        } catch (Exception $error) {
             Log::error('Error when create new post', ['error' => $error->getMessage()]);
 
             return response()->json([
@@ -81,18 +81,21 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, Post $post)
     {
-        try {
-            Gate::authorize('update', $post);
+        Gate::authorize('update', $post);
 
+        try {
             $post->update($request->validated());
 
-            Log::debug('Post updated.', ['post_id' => $post->id]);
+            Log::debug('Post updated successfully.', ['post_id' => $post->id]);
 
             return new PostResource($post)
                 ->response()
                 ->setStatusCode(200);
-        } catch (Throwable $error) {
-            Log::error('Error when updating post', ['error' => $error->getMessage()]);
+        } catch (Exception $error) {
+            Log::error('Error when updating post', [
+                'post_id' => $post->id,
+                'error' => $error->getMessage(),
+            ]);
 
             return response()->json([
                 'status' => 'error',
