@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class PostTest extends TestCase
@@ -83,6 +84,23 @@ class PostTest extends TestCase
         $response = $this->getJson(route('posts.show', ['post' => $draft->id]));
 
         $response->assertStatus(404);
+    }
+
+    public function test_signed_url_to_show_draft_post()
+    {
+        $draft = $draft = Post::factory()->create([
+            'user_id' => $this->user->id,
+            'is_draft' => true,
+        ]);
+
+        $signedUrl = URL::signedRoute('posts.show', ['post' => $draft->id]);
+
+        $response = $this->actingAs($this->user)->getJson($signedUrl);
+
+        $response->assertStatus(200)
+            ->assertJsonFragment([
+                'id' => $draft->id,
+            ]);
     }
 
     public function test_update_only_author_can()
