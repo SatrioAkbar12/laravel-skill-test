@@ -7,9 +7,11 @@ use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class PostController extends Controller
 {
@@ -59,11 +61,19 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, Post $post)
     {
-        $post = Post::with('user')
-            ->active()
-            ->findOrFail($id);
+        if (! $request->hasValidSignature()) {
+            $isDraft = $post->is_draft;
+            $isScheduled = $post->published_at && $post->published_at->isFuture();
+
+            if ($isDraft || $isScheduled) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Post not found',
+                ], 404);
+            }
+        }
 
         return new PostResource($post);
     }
@@ -117,5 +127,12 @@ class PostController extends Controller
             'status' => 'success',
             'message' => 'Post deleted successfully.',
         ], 200);
+    }
+
+    public function generateSignedUrl(Post $post)
+    {
+        return response()->json([
+            'signed_url' => URL::signedRoute('posts.show', ['post' => $post->id]),
+        ]);
     }
 }
