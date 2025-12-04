@@ -8,6 +8,8 @@ use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PostController extends Controller
 {
@@ -36,11 +38,22 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
-        $post = Auth::user()->posts()->create($request->validated());
+        try {
+            $post = Auth::user()->posts()->create($request->validated());
 
-        return new PostResource($post)
-            ->response()
-            ->setStatusCode(201);
+            Log::debug('New post created.', ['post_id' => $post->id]);
+
+            return new PostResource($post)
+                ->response()
+                ->setStatusCode(201);
+        } catch (Throwable $error) {
+            Log::error('Error when create new post', ['error' => $error->getMessage()]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create new post',
+            ], 500);
+        }
     }
 
     /**
@@ -68,13 +81,24 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, Post $post)
     {
-        Gate::authorize('update', $post);
+        try {
+            Gate::authorize('update', $post);
 
-        $post->update($request->validated());
+            $post->update($request->validated());
 
-        return new PostResource($post)
-            ->response()
-            ->setStatusCode(200);
+            Log::debug('Post updated.', ['post_id' => $post->id]);
+
+            return new PostResource($post)
+                ->response()
+                ->setStatusCode(200);
+        } catch (Throwable $error) {
+            Log::error('Error when updating post', ['error' => $error->getMessage()]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update post',
+            ], 500);
+        }
     }
 
     /**
