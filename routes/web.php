@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,6 +15,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::resource('posts', PostController::class)->except(['index', 'show']);
+
+    Route::get('/logs/download', [LogController::class, 'download'])->name('logs.download');
 });
 
 Route::resource('posts', PostController::class)->only('index', 'show');
