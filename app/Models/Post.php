@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
-use Dom\Comment;
+use App\Observers\PostObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ObservedBy([PostObserver::class])]
 class Post extends Model
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -30,6 +33,8 @@ class Post extends Model
         'published_at' => 'datetime',
     ];
 
+    protected $appends = ['is_active'];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -46,5 +51,12 @@ class Post extends Model
         $query->where('is_draft', false)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now());
+    }
+
+    protected function isActive(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => ! $this->is_draft && $this->published_at !== null && $this->published_at <= now(),
+        );
     }
 }
