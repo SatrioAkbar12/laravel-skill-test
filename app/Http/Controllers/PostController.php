@@ -63,19 +63,14 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post)
     {
-        if (! $request->hasValidSignature()) {
-            $isDraft = $post->is_draft;
-            $isScheduled = $post->published_at && $post->published_at->isFuture();
-
-            if ($isDraft || $isScheduled) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Post not found',
-                ], 404);
-            }
+        if ($request->hasValidSignature() || $post->is_active) {
+            return new PostResource($post);
         }
 
-        return new PostResource($post);
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Post not found',
+        ], 404);
     }
 
     /**
